@@ -80,22 +80,22 @@ async def get_photo(message: Message, state: FSMContext):
     
     headers = {"apiKey": "helloworld"}
     
-    async with ClientSession() as session:
-        async with session.post("https://api.ocr.space/parse/image", data=form, headers=headers, timeout=ClientTimeout(15)) as resp:
-            jsonResp = await resp.json()
-            
     try:
-        await placeholer.edit_text("Результат распознования текста:")
-        await message.answer(jsonResp["ParsedResults"][0]["ParsedText"])
-        await message.answer(
-            "Всё ли верно? Если нет, пришлите исправленную версию (но не меняйте порядок данных), если да - нажмите соответствующую кнопку на клавиатуре",
-            reply_markup=kb.yes,
-        )
+        async with ClientSession() as session:
+            async with session.post("https://api.ocr.space/parse/image", data=form, headers=headers, timeout=ClientTimeout(15)) as resp:
+                jsonResp = await resp.json()
+                
+            await placeholer.edit_text("Результат распознавания текста:")
+            await message.answer(jsonResp["ParsedResults"][0]["ParsedText"])
+            await message.answer(
+                "Всё ли верно? Если нет, пришлите исправленную версию (но не меняйте порядок данных), если да - нажмите соответствующую кнопку на клавиатуре",
+                reply_markup=kb.yes,
+            )
+            
+            await state.update_data(parsedText=jsonResp["ParsedResults"][0]["ParsedText"])
+            await state.set_state(SpendingAnalysis.text_parsing_check)
         
-        await state.update_data(parsedText=jsonResp["ParsedResults"][0]["ParsedText"])
-        await state.set_state(SpendingAnalysis.text_parsing_check)
-        
-    except asyncio.TimeoutError:
+    except (TimeoutError, asyncio.CancelledError, asyncio.TimeoutError):
         await message.answer(
             "Сервис для распознавания текста не отвечает. Попробуйте ещё раз позже\n(Он бесплатный, так что такое случается. Но в большинстве случаев всё работает)"
         )
