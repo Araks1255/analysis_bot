@@ -113,7 +113,7 @@ async def text_parsing_check(message: Message, state: FSMContext):
         try:
             spending = data["parsedText"]
         except:
-            await message.answer("Произошла ошибка при получении результатов распознования текста. Попробуйте отправить его вручную")
+            await message.answer("Произошла ошибка при получении результатов распознавания текста. Попробуйте отправить его вручную")
             
     placeholder = await message.answer("Один момент...")
    
@@ -125,7 +125,7 @@ async def text_parsing_check(message: Message, state: FSMContext):
     try:
         model = genai.GenerativeModel("gemini-1.5-flash")
         response =  await model.generate_content_async(prompt)
-        await placeholder.edit_text(response.text)
+        await placeholder.edit_text(response.text, reply_markup=kb.main)
         
     except Exception as ex:
         await message.answer("Произошла непредвиденная ошибка",reply_markup=kb.main)
